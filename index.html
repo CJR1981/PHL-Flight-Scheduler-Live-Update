@@ -1041,6 +1041,34 @@
         .schedule-modified-banner.visible {
             display: block;
         }
+
+        /* Cancelled Flight Styling */
+        .flight-cancelled {
+            background: #fef2f2 !important;
+            border-left: 4px solid #ef4444 !important;
+        }
+
+        .cancelled-badge {
+            display: inline-block;
+            background: #ef4444;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .cancelled-text {
+            color: #dc2626;
+            font-weight: 600;
+            text-decoration: line-through;
+        }
+
+        .cancelled-team {
+            color: #dc2626;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -1064,14 +1092,15 @@
                 
                 <div class="file-upload-group">
                     <label for="dayOfWeek">Select Day of Week to Schedule</label>
-                    <select id="dayOfWeek" style="width: 100%; padding: 12px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1em; background: white;">
-                        <option value="Monday">Monday</option>
-                        <option value="Tuesday">Tuesday</option>
-                        <option value="Wednesday">Wednesday</option>
-                        <option value="Thursday" selected>Thursday</option>
-                        <option value="Friday">Friday</option>
-                        <option value="Saturday">Saturday</option>
-                        <option value="Sunday">Sunday</option>
+                    <select id="dayOfWeek" style="width: 100%; padding: 12px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1em; background: white; color: #6b7280;">
+                        <option value="" disabled selected style="color: #9ca3af;">Please select day of week</option>
+                        <option value="Monday" style="color: #000;">Monday</option>
+                        <option value="Tuesday" style="color: #000;">Tuesday</option>
+                        <option value="Wednesday" style="color: #000;">Wednesday</option>
+                        <option value="Thursday" style="color: #000;">Thursday</option>
+                        <option value="Friday" style="color: #000;">Friday</option>
+                        <option value="Saturday" style="color: #000;">Saturday</option>
+                        <option value="Sunday" style="color: #000;">Sunday</option>
                     </select>
                 </div>
                 
@@ -1168,19 +1197,6 @@
                                             <strong>Calculated Delay:</strong> <span id="delayAmount">+0 minutes</span>
                                         </div>
                                     </div>
-
-                                    <div class="form-field-group">
-                                        <label class="field-label">Reason (Optional)</label>
-                                        <select class="field-input" id="delayReason">
-                                            <option value="">Select reason...</option>
-                                            <option value="Weather">Weather</option>
-                                            <option value="Mechanical">Mechanical</option>
-                                            <option value="Crew">Crew</option>
-                                            <option value="ATC">ATC</option>
-                                            <option value="Catering">Catering</option>
-                                            <option value="Other">Other</option>
-                                        </select>
-                                    </div>
                                 </div>
 
                                 <div class="update-action-buttons">
@@ -1250,14 +1266,6 @@
                 </div>
 
                 <h2 class="section-title"> Detailed Team Assignments (Grouped by Team)</h2>
-                <div class="alert alert-info" style="margin-bottom: 20px;">
-                    <strong>Live-Schedule-Based Buffer Settings:</strong><br>
-                     All flight types: 5-10 min minimum gaps (based on Jan 22, 2026 live schedule)<br>
-                     Teams can mix domestic and international operations freely<br>
-                     Team availability: Up to 60 min before shift start<br>
-                     Overtime allowance: Up to 4 hours for maximum coverage<br>
-                     Operations per team: 4-8 (target 4-6 for balance)
-                </div>
                 <div id="teamDetailedGroups"></div>
 
                 <h2 class="section-title"> All Flight Assignments (Chronological)</h2>
@@ -7499,6 +7507,12 @@ const EMBEDDED_PT_DATA = [
         
         // File upload handler - only for flights now
         document.getElementById('flights').addEventListener('change', (e) => handleFileUpload(e, 'flights'));
+        
+        // Day of week change handler
+        document.getElementById('dayOfWeek').addEventListener('change', () => {
+            checkReadyToGenerate();
+            console.log('✓ Day of week selected:', document.getElementById('dayOfWeek').value);
+        });
 
         function handleFileUpload(event, type) {
             const file = event.target.files[0];
@@ -7543,12 +7557,16 @@ const EMBEDDED_PT_DATA = [
         }
 
         function checkReadyToGenerate() {
-            const ready = ftAgentsData && ptAgentsData && flightsData;
+            const daySelected = document.getElementById('dayOfWeek').value !== '';
+            const ready = ftAgentsData && ptAgentsData && flightsData && daySelected;
             document.getElementById('generateBtn').disabled = !ready;
             
             // Show ready status
             if (ftAgentsData && ptAgentsData && !flightsData) {
-                console.log(' Agent data loaded. Waiting for flight schedule...');
+                console.log('✓ Agent data loaded. Waiting for flight schedule...');
+            }
+            if (ftAgentsData && ptAgentsData && flightsData && !daySelected) {
+                console.log('✓ Data loaded. Please select a day of week...');
             }
         }
         
@@ -9272,9 +9290,20 @@ const EMBEDDED_PT_DATA = [
                     item.style.background = 'white';
                 });
                 item.addEventListener('click', () => {
-                    populateFlightUpdateCard(assignment);
-                    document.getElementById('flightSearchInput').value = flight.flight;
+                    // Store the flight data
+                    const selectedFlight = flight.flight;
+                    const selectedAssignment = assignment;
+                    
+                    // Close the dropdown first
                     hideSearchDropdown();
+                    
+                    // Set the search input to show the full flight number
+                    document.getElementById('flightSearchInput').value = selectedFlight;
+                    
+                    // Then populate the card (slight delay to ensure dropdown is closed)
+                    setTimeout(() => {
+                        populateFlightUpdateCard(selectedAssignment);
+                    }, 50);
                 });
                 dropdown.appendChild(item);
             });
@@ -9943,6 +9972,9 @@ const EMBEDDED_PT_DATA = [
                 Object.keys(liveUpdateState.modifications.flights).forEach(flightNumber => {
                     const modification = liveUpdateState.modifications.flights[flightNumber];
                     
+                    // Skip cancelled flights (they get their own highlighting)
+                    if (modification.isCancelled) return;
+                    
                     // Find all table rows with this flight number
                     const rows = document.querySelectorAll(`#flightTableBody tr, #teamDetailedGroups tr`);
                     rows.forEach(row => {
@@ -9976,6 +10008,9 @@ const EMBEDDED_PT_DATA = [
                         }
                     });
                 });
+                
+                // Also highlight cancelled flights
+                highlightCancelledFlights();
                 
                 console.log('✓ Modified flights highlighted in schedule tables');
             }, 100);
@@ -10012,9 +10047,57 @@ const EMBEDDED_PT_DATA = [
 
         function cancelFlight(assignment) {
             const flight = assignment.flight;
+            const oldTeam = assignment.team; // Save team BEFORE it gets nullified
             
-            // Add to recent updates
-            addRecentUpdate(`${flight.flight} cancelled → ${assignment.team} freed up`);
+            console.log(`Cancelling flight ${flight.flight} from team ${oldTeam}...`);
+            
+            // 1. Find the assignment in scheduleResult
+            const assignmentToCancel = scheduleResult.assignments.find(
+                a => a.flight.flight === flight.flight
+            );
+            
+            if (assignmentToCancel) {
+                const teamToFree = assignmentToCancel.team;
+                
+                // Mark as cancelled
+                assignmentToCancel.isCancelled = true;
+                assignmentToCancel.team = null; // Remove team assignment
+                
+                // 2. Remove from team's operations
+                const teamData = scheduleResult.teamWorkload.find(
+                    tw => tw.team.id === teamToFree
+                );
+                
+                if (teamData) {
+                    teamData.operations = teamData.operations.filter(
+                        op => op.flight !== flight.flight
+                    );
+                    teamData.count = teamData.operations.length;
+                    console.log(`✓ Removed from ${teamToFree}, now has ${teamData.count} ops`);
+                }
+                
+                // 3. Track modification
+                liveUpdateState.modifications.flights[flight.flight] = {
+                    flightNumber: flight.flight,
+                    destination: flight.destination,
+                    time: flight.time,
+                    oldTeam: teamToFree,
+                    isCancelled: true
+                };
+                liveUpdateState.modifications.hasChanges = true;
+                
+                // 4. Refresh displays
+                displayResults(scheduleResult);
+                
+                // 5. Show modified banner
+                document.getElementById('modifiedBanner').classList.add('visible');
+                
+                // 6. Highlight cancelled flight
+                highlightCancelledFlights();
+            }
+            
+            // Add to recent updates (using saved oldTeam)
+            addRecentUpdate(`${flight.flight} cancelled → ${oldTeam} freed up`);
             
             // Update alert counts
             liveUpdateState.alertCounts.resolved++;
@@ -10023,14 +10106,47 @@ const EMBEDDED_PT_DATA = [
             // Clear the form
             document.getElementById('clearBtn').click();
             
-            // Show success notification
+            // Show success notification (using saved oldTeam)
             showToast(
                 'Flight Cancelled', 
-                `${flight.flight} has been cancelled. Team ${assignment.team} is now available.`,
+                `${flight.flight} has been cancelled. Team ${oldTeam} is now available.`,
                 'success'
             );
             
             console.log(`✓ Flight ${flight.flight} cancelled successfully`);
+        }
+
+        // Highlight cancelled flights in the schedule
+        function highlightCancelledFlights() {
+            setTimeout(() => {
+                Object.keys(liveUpdateState.modifications.flights).forEach(flightNumber => {
+                    const modification = liveUpdateState.modifications.flights[flightNumber];
+                    
+                    if (modification.isCancelled) {
+                        // Find all table rows with this flight number
+                        const rows = document.querySelectorAll(`#flightTableBody tr, #teamDetailedGroups tr`);
+                        rows.forEach(row => {
+                            const flightCell = row.querySelector('td:first-child');
+                            if (flightCell && flightCell.textContent.trim() === flightNumber) {
+                                row.classList.add('flight-cancelled');
+                                
+                                // Add cancelled badge and strikethrough
+                                if (!flightCell.querySelector('.cancelled-badge')) {
+                                    flightCell.innerHTML = `<span class="cancelled-text">${flightNumber}</span><span class="cancelled-badge">CANCELLED</span>`;
+                                }
+                                
+                                // Remove team and show "Cancelled" in red
+                                const teamCell = row.querySelector('td:nth-child(5)'); // Assigned Team column
+                                if (teamCell) {
+                                    teamCell.innerHTML = `<span class="cancelled-team">Cancelled</span>`;
+                                }
+                            }
+                        });
+                    }
+                });
+                
+                console.log('✓ Cancelled flights highlighted');
+            }, 100);
         }
 
         function addRecentUpdate(updateText) {
