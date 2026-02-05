@@ -8900,6 +8900,9 @@ const EMBEDDED_PT_DATA = [
                 `;
                 teamTableBody.innerHTML = row + teamTableBody.innerHTML;
             }
+            
+            // Also update the team detail cards
+            generateTeamDetailedView(scheduleResult);
         }
         
         // Make updateAssignment globally available
@@ -10118,8 +10121,10 @@ const EMBEDDED_PT_DATA = [
                     if (newTeamData) {
                         // Add the updated flight (with new time if changed)
                         newTeamData.operations.push(assignmentToUpdate.flight);
+                        // Sort operations by time to maintain chronological order
+                        newTeamData.operations.sort((a, b) => a.timeMinutes - b.timeMinutes);
                         newTeamData.count = newTeamData.operations.length;
-                        console.log(`✓ Added to ${newTeam}, now has ${newTeamData.count} ops`);
+                        console.log(` Added to ${newTeam}, now has ${newTeamData.count} ops`);
                     }
                     
                     // 4. Track modification
@@ -10476,6 +10481,8 @@ const EMBEDDED_PT_DATA = [
                     );
                     if (oldTeamData) {
                         oldTeamData.operations.push(assignment.flight);
+                        // Sort operations by time to maintain chronological order
+                        oldTeamData.operations.sort((a, b) => a.timeMinutes - b.timeMinutes);
                         oldTeamData.count = oldTeamData.operations.length;
                     }
                     
@@ -10505,6 +10512,8 @@ const EMBEDDED_PT_DATA = [
                     );
                     if (teamData) {
                         teamData.operations.push(assignment.flight);
+                        // Sort operations by time to maintain chronological order
+                        teamData.operations.sort((a, b) => a.timeMinutes - b.timeMinutes);
                         teamData.count = teamData.operations.length;
                     }
                 }
