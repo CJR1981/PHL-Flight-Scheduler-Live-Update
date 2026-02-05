@@ -7641,8 +7641,8 @@ const EMBEDDED_PT_DATA = [
             });
             console.log('Team shift distribution:', shiftDistribution);
             
-            const flights = processFlights(flightsData);
-            console.log(`Flights processed: ${flights.length}`);
+            const flights = processFlights(flightsData, dayOfWeek);
+            console.log(`Flights processed for ${dayOfWeek}: ${flights.length}`);
             
             if (flights.length === 0) {
                 throw new Error('No valid flights found. Check that your flight CSV has departure times.');
@@ -7864,17 +7864,49 @@ const EMBEDDED_PT_DATA = [
             return teams;
         }
 
-        function processFlights(flightData) {
+        function processFlights(flightData, dayOfWeek) {
             console.log('Processing flights, total rows:', flightData.length);
+            console.log('Filtering for day:', dayOfWeek);
             if (flightData.length > 0) {
                 console.log('Sample flight data:', flightData[0]);
             }
+            
+            // Create a map of day names to determine which date to use
+            const dayMap = {
+                'Monday': 1,
+                'Tuesday': 2,
+                'Wednesday': 3,
+                'Thursday': 4,
+                'Friday': 5,
+                'Saturday': 6,
+                'Sunday': 0
+            };
+            
+            const targetDayNumber = dayMap[dayOfWeek];
             
             const processed = flightData
                 .filter(f => {
                     // Filter based on departure scheduled time
                     if (!f.Dep_Scheduled || f.Dep_Scheduled === '') return false;
                     if (!f.Dep_Flight || f.Dep_Flight === '') return false;
+                    
+                    // Filter by day of week if DepDate exists
+                    if (f.DepDate && f.DepDate !== '') {
+                        const depDate = new Date(f.DepDate);
+                        const dayOfWeekNumber = depDate.getDay();
+                        if (dayOfWeekNumber !== targetDayNumber) {
+                            return false; // Skip flights not on the selected day
+                        }
+                    }
+                    // Also check arrival date for terminators
+                    else if (f.ArrDate && f.ArrDate !== '') {
+                        const arrDate = new Date(f.ArrDate);
+                        const dayOfWeekNumber = arrDate.getDay();
+                        if (dayOfWeekNumber !== targetDayNumber) {
+                            return false;
+                        }
+                    }
+                    
                     return true;
                 })
                 .map(f => {
@@ -9883,6 +9915,7 @@ const EMBEDDED_PT_DATA = [
         function findAlternativeTeams(flight, newETD) {
             const alternatives = [];
             const flightTime = new Date(`2000-01-01T${newETD}`);
+            const flightTimeMinutes = parseInt(newETD.split(':')[0]) * 60 + parseInt(newETD.split(':')[1]);
             
             // Check each team for availability
             scheduleResult.teamWorkload.forEach(teamData => {
@@ -9891,6 +9924,19 @@ const EMBEDDED_PT_DATA = [
                 
                 let canFit = true;
                 let minGap = 999;
+                
+                // Check if flight time is within team's shift
+                const shiftStart = teamData.team.startMinutes;
+                const shiftEnd = shiftStart + (8.5 * 60); // 8.5 hour shift
+                
+                // Flight needs to depart within shift window (allowing 60 min before shift for prep)
+                const earliestService = shiftStart - 60;
+                const latestService = shiftEnd;
+                
+                if (flightTimeMinutes < earliestService || flightTimeMinutes > latestService) {
+                    console.log(`Team ${teamData.team.id} shift (${teamData.team.shift}) doesn't cover flight time ${newETD}`);
+                    return; // Skip this team - shift doesn't cover the flight time
+                }
                 
                 // Check if this team has capacity
                 if (teamData.operations.length >= 6) {
@@ -9912,7 +9958,8 @@ const EMBEDDED_PT_DATA = [
                     alternatives.push({
                         team: teamData.team.id,
                         currentOps: teamData.operations.length,
-                        minGap: minGap === 999 ? 'N/A' : minGap
+                        minGap: minGap === 999 ? 'N/A' : minGap,
+                        shift: teamData.team.shift
                     });
                 }
             });
@@ -9920,7 +9967,7 @@ const EMBEDDED_PT_DATA = [
             // Sort by current ops (prefer less loaded teams)
             alternatives.sort((a, b) => a.currentOps - b.currentOps);
             
-            console.log(`Found ${alternatives.length} alternative teams`);
+            console.log(`Found ${alternatives.length} alternative teams that can cover ${newETD}`);
             return alternatives.slice(0, 3); // Top 3 alternatives
         }
 
