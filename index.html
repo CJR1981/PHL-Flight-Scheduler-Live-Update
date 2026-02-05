@@ -14,7 +14,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f0f2f5;
             min-height: 100vh;
             padding: 20px;
         }
@@ -29,7 +29,7 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: linear-gradient(135deg, #0078D2 0%, #005BA1 100%);
             color: white;
             padding: 30px;
             text-align: center;
@@ -90,7 +90,7 @@
         }
 
         .file-input-wrapper input[type="file"]:hover {
-            border-color: #667eea;
+            border-color: #0078D2;
             background: #f7fafc;
         }
 
@@ -113,7 +113,7 @@
             font-size: 1em;
             font-weight: 600;
             border: none;
-            border-radius: 6px;
+            border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s;
             display: inline-flex;
@@ -127,23 +127,25 @@
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #0078D2;
             color: white;
         }
 
         .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(0, 120, 210, 0.4);
+            background: #005BA1;
         }
 
         .btn-success {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            background: #0078D2;
             color: white;
         }
 
         .btn-success:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+            box-shadow: 0 5px 15px rgba(0, 120, 210, 0.4);
+            background: #005BA1;
         }
 
         .results-section {
@@ -161,7 +163,7 @@
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             padding: 20px;
             border-radius: 8px;
-            border-left: 4px solid #667eea;
+            border-left: 4px solid #0078D2;
         }
 
         .stat-card h3 {
@@ -242,14 +244,14 @@
         }
         
         .team-selector:hover {
-            border-color: #667eea;
+            border-color: #0078D2;
             background: #f7fafc;
             box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
         }
         
         .team-selector:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #0078D2;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
         }
         
@@ -356,7 +358,7 @@
 
         .spinner {
             border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            border-top: 4px solid #0078D2;
             border-radius: 50%;
             width: 50px;
             height: 50px;
@@ -1077,13 +1079,13 @@
     
     <div class="container">
         <div class="header">
-            <h1>✈️ PHL Flight Scheduler <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 0.4em; margin-left: 10px; vertical-align: middle;">LIVE UPDATE v2</span></h1>
+            <h1>PHL Flight Scheduler <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 0.4em; margin-left: 10px; vertical-align: middle;">LIVE UPDATE v2</span></h1>
             <p>Philadelphia International Airport - Catering Operations Scheduler</p>
         </div>
 
         <!-- Modified Schedule Banner -->
         <div class="schedule-modified-banner" id="modifiedBanner">
-            ✓ Schedule Modified - Changes applied. Export to Excel to save modifications.
+            Schedule Modified - Changes applied. Export to Excel to save modifications.
         </div>
 
         <div class="content">
@@ -1128,7 +1130,7 @@
 
             <!-- Live Update & Reallocation Module -->
             <div class="live-update-toggle" id="liveUpdateToggle">
-                <h3>⚡ Live Flight Update & Reallocation</h3>
+                <h3>Live Flight Update & Reallocation</h3>
                 <span class="toggle-icon" id="toggleIcon">▼</span>
             </div>
 
@@ -1209,7 +1211,15 @@
 
                         <!-- Recent Updates -->
                         <div class="recent-updates-section">
-                            <div class="panel-title" style="font-size: 0.95em;">🕐 Recent Updates (Today)</div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <div class="panel-title" style="font-size: 0.95em;">Recent Updates (Today)</div>
+                                <button id="undoBtn" onclick="undoLastChange()" 
+                                        style="padding: 6px 12px; background: #f59e0b; color: white; border: none; border-radius: 4px; 
+                                               font-size: 0.85em; font-weight: 600; cursor: pointer; display: none;"
+                                        title="Undo the most recent change">
+                                    Undo Last
+                                </button>
+                            </div>
                             <div id="recentUpdatesList">
                                 <div style="font-size: 0.85em; color: #94a3b8; padding: 10px; text-align: center;">
                                     No updates yet today
@@ -1221,7 +1231,7 @@
                     <!-- Right: Impact Analysis & Recommendations -->
                     <div class="impact-analysis-panel">
                         <div class="impact-panel-header">
-                            <div class="panel-title" style="margin: 0;">📊 Impact Analysis & Recommendations</div>
+                            <div class="panel-title" style="margin: 0;">Impact Analysis & Recommendations</div>
                             <div class="status-indicator" id="analysisStatus" style="display: none;">
                                 <div class="status-dot"></div>
                                 <span>Analyzing...</span>
@@ -1230,7 +1240,7 @@
 
                         <div id="impactContent">
                             <div style="text-align: center; padding: 40px; color: #94a3b8;">
-                                <p style="font-size: 3em; margin-bottom: 10px;">📋</p>
+                                
                                 <p>Select a flight and click "Analyze Impact" to see<br>reallocation recommendations</p>
                             </div>
                         </div>
@@ -1247,25 +1257,37 @@
                 <h2 class="section-title"> Schedule Summary</h2>
                 <div class="stats-grid" id="statsGrid"></div>
 
-                <h2 class="section-title"> Team Assignments Summary</h2>
+                <h2 class="section-title">Team Assignments Summary</h2>
+                <div style="margin-bottom: 15px;">
+                    <input type="text" id="teamSearchInput" placeholder="🔍 Search teams by ID, shift, or flights..." 
+                           style="width: 100%; padding: 12px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1em;">
+                </div>
                 <div class="table-container">
                     <table id="teamTable">
                         <thead>
                             <tr>
-                                <th>Team</th>
-                                <th>Shift</th>
-                                <th>Operations</th>
+                                <th onclick="sortTeamTable(0)" style="cursor: pointer;">Team ↕</th>
+                                <th onclick="sortTeamTable(1)" style="cursor: pointer;">Shift ↕</th>
+                                <th onclick="sortTeamTable(2)" style="cursor: pointer;">Operations ↕</th>
                                 <th>Workload</th>
                                 <th>Flights</th>
-                                <th>First Flight</th>
-                                <th>Last Flight</th>
+                                <th onclick="sortTeamTable(5)" style="cursor: pointer;">First Flight ↕</th>
+                                <th onclick="sortTeamTable(6)" style="cursor: pointer;">Last Flight ↕</th>
                             </tr>
                         </thead>
                         <tbody id="teamTableBody"></tbody>
                     </table>
                 </div>
 
-                <h2 class="section-title"> Detailed Team Assignments (Grouped by Team)</h2>
+                <h2 class="section-title">Detailed Team Assignments (Grouped by Team)</h2>
+                <div style="margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
+                    <select id="printTeamSelect" style="padding: 10px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1em; flex: 1;">
+                        <option value="all">Print All Teams (1 per page)</option>
+                    </select>
+                    <button onclick="printTeamAssignments()" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                        Print Selected
+                    </button>
+                </div>
                 <div id="teamDetailedGroups"></div>
 
                 <h2 class="section-title"> All Flight Assignments (Chronological)</h2>
@@ -7511,7 +7533,7 @@ const EMBEDDED_PT_DATA = [
         // Day of week change handler
         document.getElementById('dayOfWeek').addEventListener('change', () => {
             checkReadyToGenerate();
-            console.log('✓ Day of week selected:', document.getElementById('dayOfWeek').value);
+            console.log(' Day of week selected:', document.getElementById('dayOfWeek').value);
         });
 
         function handleFileUpload(event, type) {
@@ -7563,10 +7585,10 @@ const EMBEDDED_PT_DATA = [
             
             // Show ready status
             if (ftAgentsData && ptAgentsData && !flightsData) {
-                console.log('✓ Agent data loaded. Waiting for flight schedule...');
+                console.log(' Agent data loaded. Waiting for flight schedule...');
             }
             if (ftAgentsData && ptAgentsData && flightsData && !daySelected) {
-                console.log('✓ Data loaded. Please select a day of week...');
+                console.log(' Data loaded. Please select a day of week...');
             }
         }
         
@@ -7585,6 +7607,8 @@ const EMBEDDED_PT_DATA = [
                 try {
                     scheduleResult = createSchedule();
                     displayResults(scheduleResult);
+                    setupTeamSearch();
+                    populatePrintDropdown();
                     document.getElementById('loading').classList.remove('active');
                     document.getElementById('results').style.display = 'block';
                     document.getElementById('exportBtn').disabled = false;
@@ -8236,6 +8260,278 @@ const EMBEDDED_PT_DATA = [
             return 0;
         }
 
+        // =====================================================================
+        // TEAM SUMMARY TABLE: SEARCH AND SORT FUNCTIONS
+        // =====================================================================
+        
+        // Search/filter team table
+        function setupTeamSearch() {
+            const searchInput = document.getElementById('teamSearchInput');
+            if (searchInput) {
+                searchInput.addEventListener('keyup', function() {
+                    const filter = this.value.toLowerCase();
+                    const rows = document.querySelectorAll('#teamTableBody tr');
+                    
+                    rows.forEach(row => {
+                        const text = row.textContent.toLowerCase();
+                        row.style.display = text.includes(filter) ? '' : 'none';
+                    });
+                });
+            }
+        }
+
+        // Sort team table by column
+        let teamSortDirection = {};
+        function sortTeamTable(columnIndex) {
+            const table = document.getElementById('teamTable');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            // Toggle sort direction
+            teamSortDirection[columnIndex] = !teamSortDirection[columnIndex];
+            const ascending = teamSortDirection[columnIndex];
+            
+            rows.sort((a, b) => {
+                let aVal = a.cells[columnIndex].textContent.trim();
+                let bVal = b.cells[columnIndex].textContent.trim();
+                
+                // Handle numeric columns
+                if (columnIndex === 2) { // Operations column
+                    aVal = parseInt(aVal) || 0;
+                    bVal = parseInt(bVal) || 0;
+                }
+                
+                // Handle time columns
+                if (columnIndex === 5 || columnIndex === 6) {
+                    if (aVal === '-') aVal = '99:99';
+                    if (bVal === '-') bVal = '99:99';
+                }
+                
+                if (aVal < bVal) return ascending ? -1 : 1;
+                if (aVal > bVal) return ascending ? 1 : -1;
+                return 0;
+            });
+            
+            // Re-append sorted rows
+            rows.forEach(row => tbody.appendChild(row));
+        }
+
+        // =====================================================================
+        // TEAM ASSIGNMENT PRINT FUNCTIONS
+        // =====================================================================
+        
+        // Populate print dropdown with team options
+        function populatePrintDropdown() {
+            const select = document.getElementById('printTeamSelect');
+            if (!select || !scheduleResult) return;
+            
+            // Keep "Print All" option
+            select.innerHTML = '<option value="all">Print All Teams (1 per page)</option>';
+            
+            // Add individual team options
+            scheduleResult.teamWorkload.forEach(tw => {
+                const option = document.createElement('option');
+                option.value = tw.team.id;
+                option.textContent = `Print ${tw.team.id} only`;
+                select.appendChild(option);
+            });
+            
+            // Add OVERNIGHT if exists
+            const overnightFlights = scheduleResult.assignments.filter(a => a.team === 'OVERNIGHT');
+            if (overnightFlights.length > 0) {
+                const option = document.createElement('option');
+                option.value = 'OVERNIGHT';
+                option.textContent = 'Print OVERNIGHT only';
+                select.appendChild(option);
+            }
+        }
+
+        // Print team assignments
+        function printTeamAssignments() {
+            const selectedValue = document.getElementById('printTeamSelect').value;
+            
+            if (!scheduleResult) {
+                alert('No schedule to print. Please generate a schedule first.');
+                return;
+            }
+            
+            // Create print window
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write('<html><head><title>Team Assignments - PHL Scheduler</title>');
+            printWindow.document.write(`
+                <style>
+                    @media print {
+                        .team-page {
+                            page-break-after: always;
+                            page-break-inside: avoid;
+                        }
+                        .team-page:last-child {
+                            page-break-after: auto;
+                        }
+                    }
+                    body {
+                        font-family: Arial, sans-serif;
+                        padding: 20px;
+                    }
+                    .team-page {
+                        margin-bottom: 40px;
+                    }
+                    .team-header {
+                        background: #1e3c72;
+                        color: white;
+                        padding: 15px;
+                        border-radius: 8px 8px 0 0;
+                    }
+                    .team-title {
+                        font-size: 1.8em;
+                        font-weight: bold;
+                        margin-bottom: 5px;
+                    }
+                    .team-info {
+                        display: flex;
+                        gap: 30px;
+                        font-size: 0.9em;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 0;
+                    }
+                    th, td {
+                        border: 1px solid #ddd;
+                        padding: 10px;
+                        text-align: left;
+                    }
+                    th {
+                        background: #f0f0f0;
+                        font-weight: bold;
+                    }
+                    tr:nth-child(even) {
+                        background: #f9f9f9;
+                    }
+                    .domestic {
+                        background: #d1fae5;
+                    }
+                    .international {
+                        background: #fef3c7;
+                    }
+                    .print-footer {
+                        margin-top: 20px;
+                        text-align: center;
+                        font-size: 0.8em;
+                        color: #666;
+                    }
+                </style>
+            `);
+            printWindow.document.write('</head><body>');
+            
+            // Generate content based on selection
+            if (selectedValue === 'all') {
+                // Print all teams
+                scheduleResult.teamWorkload.forEach(tw => {
+                    printWindow.document.write(generateTeamPrintHTML(tw));
+                });
+                
+                // Add OVERNIGHT if exists
+                const overnightFlights = scheduleResult.assignments.filter(a => a.team === 'OVERNIGHT');
+                if (overnightFlights.length > 0) {
+                    printWindow.document.write(generateOvernightPrintHTML(overnightFlights));
+                }
+            } else {
+                // Print single team
+                if (selectedValue === 'OVERNIGHT') {
+                    const overnightFlights = scheduleResult.assignments.filter(a => a.team === 'OVERNIGHT');
+                    printWindow.document.write(generateOvernightPrintHTML(overnightFlights));
+                } else {
+                    const teamData = scheduleResult.teamWorkload.find(tw => tw.team.id === selectedValue);
+                    if (teamData) {
+                        printWindow.document.write(generateTeamPrintHTML(teamData));
+                    }
+                }
+            }
+            
+            printWindow.document.write('<div class="print-footer">Generated: ' + new Date().toLocaleString() + '</div>');
+            printWindow.document.write('</body></html>');
+            printWindow.document.close();
+            
+            // Trigger print dialog
+            setTimeout(() => {
+                printWindow.print();
+            }, 250);
+        }
+
+        // Generate HTML for team print page
+        function generateTeamPrintHTML(teamData) {
+            const firstFlight = teamData.operations[0];
+            const lastFlight = teamData.operations[teamData.operations.length - 1];
+            
+            let html = '<div class="team-page">';
+            html += '<div class="team-header">';
+            html += `<div class="team-title">${teamData.team.id}</div>`;
+            html += '<div class="team-info">';
+            html += `<span>Shift: ${teamData.team.shift}</span>`;
+            html += `<span>Operations: ${teamData.count}</span>`;
+            html += `<span>First Flight: ${firstFlight ? firstFlight.time : '-'}</span>`;
+            html += `<span>Last Flight: ${lastFlight ? lastFlight.time : '-'}</span>`;
+            html += '</div></div>';
+            
+            html += '<table>';
+            html += '<thead><tr>';
+            html += '<th>#</th><th>Flight</th><th>Destination</th><th>STD</th><th>Type</th><th>Gate</th><th>PAX</th><th>Equipment</th>';
+            html += '</tr></thead><tbody>';
+            
+            teamData.operations.forEach((flight, index) => {
+                const rowClass = flight.type === 'Domestic' ? 'domestic' : 'international';
+                html += `<tr class="${rowClass}">`;
+                html += `<td>${index + 1}</td>`;
+                html += `<td><strong>${flight.flight}</strong></td>`;
+                html += `<td>${flight.destination}</td>`;
+                html += `<td>${flight.time}</td>`;
+                html += `<td>${flight.type}</td>`;
+                html += `<td>${flight.gate || '-'}</td>`;
+                html += `<td>${flight.passengers || '-'}</td>`;
+                html += `<td>${flight.equipment || '-'}</td>`;
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table></div>';
+            return html;
+        }
+
+        // Generate HTML for OVERNIGHT print page
+        function generateOvernightPrintHTML(flights) {
+            let html = '<div class="team-page">';
+            html += '<div class="team-header">';
+            html += '<div class="team-title">OVERNIGHT</div>';
+            html += '<div class="team-info">';
+            html += `<span>Shift: Previous Day</span>`;
+            html += `<span>Operations: ${flights.length}</span>`;
+            html += '</div></div>';
+            
+            html += '<table>';
+            html += '<thead><tr>';
+            html += '<th>#</th><th>Flight</th><th>Destination</th><th>STD</th><th>Type</th><th>Gate</th><th>PAX</th><th>Equipment</th>';
+            html += '</tr></thead><tbody>';
+            
+            flights.forEach((assignment, index) => {
+                const flight = assignment.flight;
+                const rowClass = flight.type === 'Domestic' ? 'domestic' : 'international';
+                html += `<tr class="${rowClass}">`;
+                html += `<td>${index + 1}</td>`;
+                html += `<td><strong>${flight.flight}</strong></td>`;
+                html += `<td>${flight.destination}</td>`;
+                html += `<td>${flight.time}</td>`;
+                html += `<td>${flight.type}</td>`;
+                html += `<td>${flight.gate || '-'}</td>`;
+                html += `<td>${flight.passengers || '-'}</td>`;
+                html += `<td>${flight.equipment || '-'}</td>`;
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table></div>';
+            return html;
+        }
+
         function minutesToTime(minutes) {
             const hours = Math.floor(minutes / 60);
             const mins = minutes % 60;
@@ -8247,7 +8543,7 @@ const EMBEDDED_PT_DATA = [
             // Display header with day of week
             const statsGrid = document.getElementById('statsGrid');
             statsGrid.innerHTML = `
-                <div class="stat-card" style="grid-column: span 2; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                <div class="stat-card" style="grid-column: span 2; background: linear-gradient(135deg, #0078D2 0%, #005BA1 100%); color: white;">
                     <h3 style="color: rgba(255,255,255,0.9);">Scheduling Day</h3>
                     <div class="value" style="color: white;">${result.dayOfWeek}</div>
                 </div>
@@ -8845,18 +9141,16 @@ const EMBEDDED_PT_DATA = [
         window.sendChatMessage = sendChatMessage;
 
         function exportToExcel() {
-            alert('Export button clicked! Check console for details.');
             console.log('========== EXPORT FUNCTION CALLED ==========');
             
             if (!scheduleResult) {
-                alert('ERROR: No schedule generated yet!\n\nPlease click Generate Schedule first.');
                 console.error('No scheduleResult');
                 return;
             }
             console.log('âœ“ Schedule exists');
             
             if (typeof XLSX === 'undefined') {
-                alert('ERROR: Excel library not loaded!\n\nPlease refresh the page and try again.');
+                console.error('XLSX library not loaded - export cancelled');
                 console.error('XLSX library not loaded');
                 return;
             }
@@ -9124,11 +9418,11 @@ const EMBEDDED_PT_DATA = [
             try {
                 XLSX.writeFile(wb, filename);
                 console.log('========== EXPORT COMPLETED ==========');
-                alert('SUCCESS!\n\nFile should be downloading:\n' + filename + '\n\nCheck your Downloads folder.\n\nâš ï¸ NOTE: If on iOS, this may not work from local files. Try on desktop computer.');
+                console.log('File exported successfully:', filename);
             } catch (error) {
                 console.error('========== EXPORT FAILED ==========');
                 console.error('Error:', error);
-                alert('EXPORT FAILED!\n\nError: ' + error.message + '\n\nTry on desktop computer (not iOS).');
+                console.error('Export failed:', error.message);
             }
         }
 
@@ -9140,7 +9434,7 @@ const EMBEDDED_PT_DATA = [
             const container = document.getElementById('toastContainer');
             
             const icons = {
-                success: '✓',
+                success: 'Success',
                 error: '✗',
                 info: 'ℹ',
                 warning: '⚠'
@@ -9182,7 +9476,8 @@ const EMBEDDED_PT_DATA = [
             modifications: {
                 flights: {}, // flightNumber: { oldTeam, newTeam, oldTime, newTime }
                 hasChanges: false
-            }
+            },
+            undoHistory: [] // Stack of changes for undo functionality
         };
 
         // Toggle Live Update Panel
@@ -9223,7 +9518,7 @@ const EMBEDDED_PT_DATA = [
                 return;
             }
 
-            console.log(`🔍 Searching for: "${searchTerm}" in ${scheduleResult.assignments.length} flights`);
+            console.log(`Searching for: "${searchTerm}" in ${scheduleResult.assignments.length} flights`);
 
             // Search through all assigned flights
             const matches = scheduleResult.assignments.filter(assignment => {
@@ -9367,7 +9662,7 @@ const EMBEDDED_PT_DATA = [
             liveUpdateState.selectedFlight = flight.flight;
             liveUpdateState.selectedFlightData = assignment;
 
-            console.log('📋 Populating card for:', flight.flight, assignment);
+            console.log(' Populating card for:', flight.flight, assignment);
 
             // Populate card fields
             document.getElementById('selectedFlightNumber').textContent = flight.flight;
@@ -9454,7 +9749,7 @@ const EMBEDDED_PT_DATA = [
                 try {
                     performImpactAnalysis(etd);
                     document.getElementById('analysisStatus').style.display = 'none';
-                    showToast('Analysis Complete', 'Impact analysis completed successfully', 'success');
+                    // Analysis complete - no toast needed
                 } catch (error) {
                     console.error('ERROR in performImpactAnalysis:', error);
                     showToast('Analysis Error', error.message, 'error');
@@ -9495,7 +9790,7 @@ const EMBEDDED_PT_DATA = [
                 return;
             }
 
-            console.log('✅ Team data found:', teamData.team.id, 'with', teamData.operations.length, 'flights');
+            console.log(' Team data found:', teamData.team.id, 'with', teamData.operations.length, 'flights');
 
             // Analyze timing conflicts
             console.log('Analyzing timing conflicts...');
@@ -9639,7 +9934,7 @@ const EMBEDDED_PT_DATA = [
                     title: `Option A: Reassign to ${bestAlt.team}`,
                     description: `Move ${flight.flight} from ${currentTeamData.team.id} to ${bestAlt.team}. Eliminates timing conflicts, maintains balanced workload, and preserves all buffer requirements.`,
                     stats: {
-                        conflicts: '✓',
+                        conflicts: 'None',
                         newTeamOps: bestAlt.currentOps + 1,
                         oldTeamOps: currentTeamData.operations.length - 1
                     }
@@ -9654,7 +9949,7 @@ const EMBEDDED_PT_DATA = [
                     title: `Option B: Keep on ${currentTeamData.team.id}`,
                     description: `Flight ${flight.flight} remains on ${currentTeamData.team.id}. No timing conflicts with new ETD. Team workload stays balanced at ${currentTeamData.operations.length} operations.`,
                     stats: {
-                        conflicts: '✓',
+                        conflicts: 'None',
                         newTeamOps: currentTeamData.operations.length,
                         oldTeamOps: currentTeamData.operations.length
                     }
@@ -9672,19 +9967,6 @@ const EMBEDDED_PT_DATA = [
                     }
                 });
             }
-            
-            // Option C: Mark for overtime
-            options.push({
-                type: 'overtime',
-                recommended: false,
-                title: 'Option C: Mark for Overtime',
-                description: `Flag ${flight.flight} for overtime coverage, remove from ${currentTeamData.team.id}. Resolves conflicts, reduces team workload. Estimated OT cost: ~$125 for 2.5hr coverage.`,
-                stats: {
-                    conflicts: '$',
-                    newTeamOps: currentTeamData.operations.length - 1,
-                    oldTeamOps: '1 OT'
-                }
-            });
             
             return options;
         }
@@ -9812,7 +10094,7 @@ const EMBEDDED_PT_DATA = [
                     
                     if (assignmentToUpdate) {
                         assignmentToUpdate.team = newTeam;
-                        console.log('✓ Assignment updated');
+                        console.log(' Assignment updated');
                     }
                     
                     // 2. Update old team's operations (remove flight)
@@ -9860,9 +10142,22 @@ const EMBEDDED_PT_DATA = [
                     
                     liveUpdateState.modifications.hasChanges = true;
                     
+                    // Track for undo
+                    liveUpdateState.undoHistory.push({
+                        type: 'reassign',
+                        flightNumber: flight.flight,
+                        oldTeam: oldTeam,
+                        newTeam: newTeam,
+                        oldTime: flight.time,
+                        newTime: liveUpdateState.pendingETD || flight.time,
+                        description: `${flight.flight} reassigned from ${oldTeam} to ${newTeam}`
+                    });
+                    
                     // 5. Refresh ALL displays
                     console.log('Refreshing schedule display...');
                     displayResults(scheduleResult);
+                    setupTeamSearch();
+                    populatePrintDropdown();
                     
                     // 6. Show modified banner
                     document.getElementById('modifiedBanner').classList.add('visible');
@@ -9906,52 +10201,6 @@ const EMBEDDED_PT_DATA = [
                     liveUpdateState.alertCounts.warning++;
                     break;
                     
-                case 'overtime':
-                    // Mark flight as overtime in the data
-                    const overtimeAssignment = scheduleResult.assignments.find(
-                        a => a.flight.flight === flight.flight
-                    );
-                    
-                    if (overtimeAssignment) {
-                        const currentTeam = overtimeAssignment.team;
-                        overtimeAssignment.team = 'OVERTIME';
-                        overtimeAssignment.isOvertime = true;
-                        
-                        // Remove from current team
-                        const currentTeamData = scheduleResult.teamWorkload.find(
-                            tw => tw.team.id === currentTeam
-                        );
-                        if (currentTeamData) {
-                            currentTeamData.operations = currentTeamData.operations.filter(
-                                op => op.flight !== flight.flight
-                            );
-                            currentTeamData.count = currentTeamData.operations.length;
-                        }
-                        
-                        // Track modification
-                        liveUpdateState.modifications.flights[flight.flight] = {
-                            oldTeam: currentTeam,
-                            newTeam: 'OVERTIME',
-                            flightNumber: flight.flight,
-                            destination: flight.destination,
-                            time: flight.time
-                        };
-                        liveUpdateState.modifications.hasChanges = true;
-                        
-                        // Refresh display
-                        displayResults(scheduleResult);
-                        document.getElementById('modifiedBanner').classList.add('visible');
-                        highlightModifiedFlights();
-                    }
-                    
-                    showToast(
-                        'Overtime Scheduled',
-                        `${flight.flight} marked for overtime coverage (~$125)`,
-                        'info'
-                    );
-                    addRecentUpdate(`${flight.flight} scheduled for overtime coverage`);
-                    liveUpdateState.alertCounts.resolved++;
-                    break;
             }
             
             updateAlertCounts();
@@ -9961,7 +10210,7 @@ const EMBEDDED_PT_DATA = [
                 document.getElementById('clearBtn').click();
             }, 1000);
             
-            console.log('✓ Reallocation option applied successfully');
+            console.log(' Reallocation option applied successfully');
             console.log('Modified flights:', liveUpdateState.modifications.flights);
         };
 
@@ -10012,7 +10261,7 @@ const EMBEDDED_PT_DATA = [
                 // Also highlight cancelled flights
                 highlightCancelledFlights();
                 
-                console.log('✓ Modified flights highlighted in schedule tables');
+                console.log(' Modified flights highlighted in schedule tables');
             }, 100);
         }
 
@@ -10022,7 +10271,7 @@ const EMBEDDED_PT_DATA = [
             document.getElementById('flightUpdateCard').style.display = 'none';
             document.getElementById('impactContent').innerHTML = `
                 <div style="text-align: center; padding: 40px; color: #94a3b8;">
-                    <p style="font-size: 3em; margin-bottom: 10px;">📋</p>
+                    
                     <p>Select a flight and click "Analyze Impact" to see<br>reallocation recommendations</p>
                 </div>
             `;
@@ -10086,8 +10335,18 @@ const EMBEDDED_PT_DATA = [
                 };
                 liveUpdateState.modifications.hasChanges = true;
                 
+                // Track for undo
+                liveUpdateState.undoHistory.push({
+                    type: 'cancel',
+                    flightNumber: flight.flight,
+                    oldTeam: teamToFree,
+                    description: `${flight.flight} cancelled (was on ${teamToFree})`
+                });
+                
                 // 4. Refresh displays
                 displayResults(scheduleResult);
+                setupTeamSearch();
+                populatePrintDropdown();
                 
                 // 5. Show modified banner
                 document.getElementById('modifiedBanner').classList.add('visible');
@@ -10145,7 +10404,7 @@ const EMBEDDED_PT_DATA = [
                     }
                 });
                 
-                console.log('✓ Cancelled flights highlighted');
+                console.log(' Cancelled flights highlighted');
             }, 100);
         }
 
@@ -10156,6 +10415,12 @@ const EMBEDDED_PT_DATA = [
             }
             
             updateRecentUpdatesList();
+            
+            // Show undo button when there are updates
+            const undoBtn = document.getElementById('undoBtn');
+            if (undoBtn && liveUpdateState.undoHistory.length > 0) {
+                undoBtn.style.display = 'inline-block';
+            }
         }
 
         function updateRecentUpdatesList() {
@@ -10175,6 +10440,102 @@ const EMBEDDED_PT_DATA = [
                 html += `<div class="recent-update-item"><strong>${update}</strong></div>`;
             });
             listElement.innerHTML = html;
+        }
+
+        // Undo last change
+        function undoLastChange() {
+            if (liveUpdateState.undoHistory.length === 0) {
+                showToast('Nothing to Undo', 'No recent changes to reverse', 'info');
+                return;
+            }
+            
+            const lastChange = liveUpdateState.undoHistory.pop();
+            console.log('=== UNDOING CHANGE ===', lastChange);
+            
+            if (lastChange.type === 'reassign') {
+                // Revert team assignment
+                const assignment = scheduleResult.assignments.find(
+                    a => a.flight.flight === lastChange.flightNumber
+                );
+                
+                if (assignment) {
+                    // Remove from new team
+                    const newTeamData = scheduleResult.teamWorkload.find(
+                        tw => tw.team.id === lastChange.newTeam
+                    );
+                    if (newTeamData) {
+                        newTeamData.operations = newTeamData.operations.filter(
+                            op => op.flight !== lastChange.flightNumber
+                        );
+                        newTeamData.count = newTeamData.operations.length;
+                    }
+                    
+                    // Add back to old team
+                    const oldTeamData = scheduleResult.teamWorkload.find(
+                        tw => tw.team.id === lastChange.oldTeam
+                    );
+                    if (oldTeamData) {
+                        oldTeamData.operations.push(assignment.flight);
+                        oldTeamData.count = oldTeamData.operations.length;
+                    }
+                    
+                    // Update assignment
+                    assignment.team = lastChange.oldTeam;
+                    
+                    // Revert time if it was changed
+                    if (lastChange.oldTime && lastChange.newTime) {
+                        assignment.flight.time = lastChange.oldTime;
+                        const timeParts = lastChange.oldTime.split(':');
+                        assignment.flight.timeMinutes = parseInt(timeParts[0]) * 60 + parseInt(timeParts[1]);
+                    }
+                }
+            } else if (lastChange.type === 'cancel') {
+                // Uncancel flight
+                const assignment = scheduleResult.assignments.find(
+                    a => a.flight.flight === lastChange.flightNumber
+                );
+                
+                if (assignment) {
+                    assignment.isCancelled = false;
+                    assignment.team = lastChange.oldTeam;
+                    
+                    // Add back to team
+                    const teamData = scheduleResult.teamWorkload.find(
+                        tw => tw.team.id === lastChange.oldTeam
+                    );
+                    if (teamData) {
+                        teamData.operations.push(assignment.flight);
+                        teamData.count = teamData.operations.length;
+                    }
+                }
+            }
+            
+            // Remove from modifications
+            delete liveUpdateState.modifications.flights[lastChange.flightNumber];
+            
+            // Check if there are any remaining modifications
+            if (Object.keys(liveUpdateState.modifications.flights).length === 0) {
+                liveUpdateState.modifications.hasChanges = false;
+                document.getElementById('modifiedBanner').classList.remove('visible');
+            }
+            
+            // Remove last item from recent updates
+            liveUpdateState.recentUpdates.shift();
+            updateRecentUpdatesList();
+            
+            // Hide undo button if no more changes
+            if (liveUpdateState.undoHistory.length === 0) {
+                document.getElementById('undoBtn').style.display = 'none';
+            }
+            
+            // Refresh display
+            displayResults(scheduleResult);
+            setupTeamSearch();
+            populatePrintDropdown();
+            highlightModifiedFlights();
+            
+            showToast('Change Undone', `Reverted: ${lastChange.description}`, 'success');
+            console.log(' Undo completed');
         }
 
         function updateAlertCounts() {
@@ -10198,7 +10559,7 @@ const EMBEDDED_PT_DATA = [
             document.getElementById('flightUpdateCard').style.display = 'none';
             document.getElementById('impactContent').innerHTML = `
                 <div style="text-align: center; padding: 40px; color: #94a3b8;">
-                    <p style="font-size: 3em; margin-bottom: 10px;">📋</p>
+                    
                     <p>Select a flight and click "Analyze Impact" to see<br>reallocation recommendations</p>
                 </div>
             `;
@@ -10221,7 +10582,7 @@ const EMBEDDED_PT_DATA = [
             cancelFlight(assignment);
         };
 
-        console.log('✅ Live Update & Reallocation Module initialized');
+        console.log(' Live Update & Reallocation Module initialized');
         
         // Verify event listeners are attached
         console.log('Verifying event listeners...');
