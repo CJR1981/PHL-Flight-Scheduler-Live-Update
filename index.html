@@ -4,10 +4,34 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHL Flight Scheduler - v2.6</title>
+    <title>PHL Flight Scheduler - v2.9</title>
     <!--  
-    PHL Flight Scheduler v2.6
+    PHL Flight Scheduler v2.9
     Date: February 5, 2026
+    
+    v2.9 Changes - Print Button Error Fix:
+    - **FIX**: Print button error when popup blocker prevents window from opening
+      - Added null check after window.open() to handle blocked popups gracefully
+      - Shows user-friendly error message suggesting to allow popups or use Excel export
+      - Prevents "Cannot read properties of undefined (reading 'document')" error
+    
+    v2.8 Changes - Team Ready Time Logic Fix:
+    - **CRITICAL FIX**: Corrected team ready time calculation
+      - BUG: Teams were considered "ready" 15 minutes BEFORE shift start
+      - REALITY: Teams cannot be ready before they clock in!
+      - FIXED: Standard mode - teams ready 15 min AFTER shift start (equipment prep time)
+      - FIXED: Flexible modes - teams ready AT shift start (maximum realistic flexibility)
+      - Example: Team starts 13:00 → ready at 13:15 (not 12:45!)
+      - This adds realistic prep time for clock-in, truck assignment, equipment check
+    
+    v2.7 Changes - CRITICAL ALGORITHM BUG FIX:
+    - **EMERGENCY FIX**: Corrected team availability checking in ALL assignment functions
+      - BUG: Functions checked flight DEPARTURE time against team shift start
+      - CORRECT: Must check SERVICE START time (departure - 40 min domestic, - 60 min intl)
+      - Example: Flight departs 12:23, service starts 11:43, team must be ready by 11:43
+      - Was allowing teams to be assigned flights BEFORE they started work!
+      - Fixed in: canAssignFlight(), canAssignFlightFlexible(), canAssignFlightVeryFlexible()
+      - This was causing impossible assignments like TM211 (starts 13:00) getting flight departing 12:23
     
     v2.6 Changes:
     - CRITICAL FIX: ETD updates now properly saved when keeping original team
@@ -1104,7 +1128,7 @@
     
     <div class="container">
         <div class="header">
-            <h1>PHL Flight Scheduler <span style="background: #10b981; padding: 4px 12px; border-radius: 12px; font-size: 0.4em; margin-left: 10px; vertical-align: middle;">v2.6</span></h1>
+            <h1>PHL Flight Scheduler <span style="background: #10b981; padding: 4px 12px; border-radius: 12px; font-size: 0.4em; margin-left: 10px; vertical-align: middle;">v2.9</span></h1>
             <p>Live Update & Reallocation System</p>
             <p>Philadelphia International Airport - Catering Operations Scheduler</p>
         </div>
@@ -8102,8 +8126,13 @@ const EMBEDDED_PT_DATA = [
             // FLEXIBLE MODE - Based on live schedule patterns
             // Live data: 0-5 min gaps common, early starts standard
             
-            const teamReadyTime = team.startMinutes - 60; 
-            if (flight.timeMinutes < teamReadyTime) return false;
+            // Calculate when service must start based on flight type
+            const serviceBuffer = (flight.type === 'Domestic') ? 40 : 60;
+            const serviceStartTime = flight.timeMinutes - serviceBuffer;
+            
+            // Flexible: Allow team to be ready right at shift start (no prep time buffer)
+            const teamReadyTime = team.startMinutes; 
+            if (serviceStartTime < teamReadyTime) return false;
             
             const shiftEnd = team.startMinutes + (8.5 * 60);
             const maxTime = shiftEnd + 240; // 4 hours overtime
@@ -8134,8 +8163,13 @@ const EMBEDDED_PT_DATA = [
             // FINAL SWEEP - Maximum coverage like live schedule
             // Live showed: 0-3 min gaps acceptable, simultaneous operations work
             
-            const teamReadyTime = team.startMinutes - 60;
-            if (flight.timeMinutes < teamReadyTime) return false;
+            // Calculate when service must start based on flight type
+            const serviceBuffer = (flight.type === 'Domestic') ? 40 : 60;
+            const serviceStartTime = flight.timeMinutes - serviceBuffer;
+            
+            // Maximum flexibility: Team ready right at shift start
+            const teamReadyTime = team.startMinutes;
+            if (serviceStartTime < teamReadyTime) return false;
             
             const shiftEnd = team.startMinutes + (8.5 * 60);
             const maxTime = shiftEnd + 240; // 4 hours overtime
@@ -8155,9 +8189,14 @@ const EMBEDDED_PT_DATA = [
         }
 
         function canAssignFlight(team, flight, workload) {
-            // Check if team has started (allow 15 minutes before shift for early prep)
-            const teamReadyTime = team.startMinutes - 15;
-            if (flight.timeMinutes < teamReadyTime) {
+            // Calculate when service must start based on flight type
+            // Domestic: 40 min before departure, International: 60 min before departure
+            const serviceBuffer = (flight.type === 'Domestic') ? 40 : 60;
+            const serviceStartTime = flight.timeMinutes - serviceBuffer;
+            
+            // Team is ready 15 minutes AFTER shift start (clock in, get truck, receive assignments)
+            const teamReadyTime = team.startMinutes + 15;
+            if (serviceStartTime < teamReadyTime) {
                 return false;
             }
             
@@ -8383,6 +8422,13 @@ const EMBEDDED_PT_DATA = [
             
             // Create print window
             const printWindow = window.open('', '_blank');
+            
+            // Check if window opened successfully (popup blocker may prevent this)
+            if (!printWindow) {
+                alert('Unable to open print window. Please allow popups for this site or use the Excel export instead.');
+                return;
+            }
+            
             printWindow.document.write('<html><head><title>Team Assignments - PHL Scheduler</title>');
             printWindow.document.write(`
                 <style>
