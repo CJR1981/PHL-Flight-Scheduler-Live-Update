@@ -2,8 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PHL Flight Scheduler - Live Update v2</title>
+    <title>PHL Flight Scheduler - v2.6</title>
+    <!--  
+    PHL Flight Scheduler v2.6
+    Date: February 5, 2026
+    
+    v2.6 Changes:
+    - CRITICAL FIX: ETD updates now properly saved when keeping original team
+      - Fixed BOTH 'keep' case (no conflicts) AND 'keep_adjust' case (with conflicts)
+      - When user rejects swap recommendation and keeps original team
+      - Flight time is now updated in both assignment AND team operations array
+      - Team operations are re-sorted chronologically after time update
+      - Fixes issue where modified ETD was not appearing in flight schedule
+      - Applies whether there are timing conflicts or not
+    
+    v2.2 Changes:
+    - CRITICAL FIX: Aircraft turn awareness in conflict detection
+      - Flights on same aircraft (same Nose #) are serviced together on one truck load
+      - No conflict checking between flights on the same turn
+      - Prevents false conflicts on sequential departures of same aircraft
+    
+    v2.1 Changes:
+    - Corrected buffer conflict detection logic
+    - Proper international vs domestic buffer handling
+    - Character encoding fixes
+    -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * {
@@ -1079,7 +1104,8 @@
     
     <div class="container">
         <div class="header">
-            <h1>PHL Flight Scheduler <span style="background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; font-size: 0.4em; margin-left: 10px; vertical-align: middle;">LIVE UPDATE v2</span></h1>
+            <h1>PHL Flight Scheduler <span style="background: #10b981; padding: 4px 12px; border-radius: 12px; font-size: 0.4em; margin-left: 10px; vertical-align: middle;">v2.6</span></h1>
+            <p>Live Update & Reallocation System</p>
             <p>Philadelphia International Airport - Catering Operations Scheduler</p>
         </div>
 
@@ -1131,7 +1157,7 @@
             <!-- Live Update & Reallocation Module -->
             <div class="live-update-toggle" id="liveUpdateToggle">
                 <h3>Live Flight Update & Reallocation</h3>
-                <span class="toggle-icon" id="toggleIcon">▼</span>
+                <span class="toggle-icon" id="toggleIcon">&#9660;</span>
             </div>
 
             <div class="live-update-panel" id="liveUpdatePanel">
@@ -1161,11 +1187,11 @@
                 <div class="update-main-grid">
                     <!-- Left: Flight Update Entry -->
                     <div class="update-entry-panel">
-                        <div class="panel-title">📝 Update Flight Status</div>
+                        <div class="panel-title">Update Flight Status</div>
 
                         <div class="flight-search-box">
                             <input type="text" id="flightSearchInput" placeholder="Search by flight number or destination...">
-                            <span class="search-icon">🔍</span>
+                            <span class="search-icon">&#128269;</span>
                         </div>
 
                         <!-- Flight Update Card (populated when flight selected) -->
@@ -1259,20 +1285,20 @@
 
                 <h2 class="section-title">Team Assignments Summary</h2>
                 <div style="margin-bottom: 15px;">
-                    <input type="text" id="teamSearchInput" placeholder="🔍 Search teams by ID, shift, or flights..." 
+                    <input type="text" id="teamSearchInput" placeholder="&#128269; Search teams by ID, shift, or flights..." 
                            style="width: 100%; padding: 12px; border: 2px solid #cbd5e0; border-radius: 6px; font-size: 1em;">
                 </div>
                 <div class="table-container">
                     <table id="teamTable">
                         <thead>
                             <tr>
-                                <th onclick="sortTeamTable(0)" style="cursor: pointer;">Team ↕</th>
-                                <th onclick="sortTeamTable(1)" style="cursor: pointer;">Shift ↕</th>
-                                <th onclick="sortTeamTable(2)" style="cursor: pointer;">Operations ↕</th>
+                                <th onclick="sortTeamTable(0)" style="cursor: pointer;">Team &#8597;</th>
+                                <th onclick="sortTeamTable(1)" style="cursor: pointer;">Shift &#8597;</th>
+                                <th onclick="sortTeamTable(2)" style="cursor: pointer;">Operations &#8597;</th>
                                 <th>Workload</th>
                                 <th>Flights</th>
-                                <th onclick="sortTeamTable(5)" style="cursor: pointer;">First Flight ↕</th>
-                                <th onclick="sortTeamTable(6)" style="cursor: pointer;">Last Flight ↕</th>
+                                <th onclick="sortTeamTable(5)" style="cursor: pointer;">First Flight &#8597;</th>
+                                <th onclick="sortTeamTable(6)" style="cursor: pointer;">Last Flight &#8597;</th>
                             </tr>
                         </thead>
                         <tbody id="teamTableBody"></tbody>
@@ -7641,8 +7667,8 @@ const EMBEDDED_PT_DATA = [
             });
             console.log('Team shift distribution:', shiftDistribution);
             
-            const flights = processFlights(flightsData, dayOfWeek);
-            console.log(`Flights processed for ${dayOfWeek}: ${flights.length}`);
+            const flights = processFlights(flightsData);
+            console.log(`Flights processed: ${flights.length}`);
             
             if (flights.length === 0) {
                 throw new Error('No valid flights found. Check that your flight CSV has departure times.');
@@ -7686,7 +7712,7 @@ const EMBEDDED_PT_DATA = [
                     team: 'OVERNIGHT',
                     phase: 'overnight_serviced'
                 });
-                console.log(`  âœ“ ${flight.flight} (${flight.time}) â†’ OVERNIGHT`);
+                console.log(`  [OK] ${flight.flight} (${flight.time}) -> OVERNIGHT`);
             });
             
             const veryEarlyDomestic = overnight0500;  // For backward compatibility
@@ -7794,7 +7820,7 @@ const EMBEDDED_PT_DATA = [
             // Option 2: Morning + Evening coverage (12 hours total)
             const FIREHOUSE_TEAMS = ['TM100', 'TM106'];  // Morning: TM100 (05:00-11:00), Evening: TM106 (15:00-21:00)
             
-            console.log('ðŸš’ FIREHOUSE Standby Teams Reserved:', FIREHOUSE_TEAMS.join(', '));
+            console.log('[FH] FIREHOUSE Standby Teams Reserved:', FIREHOUSE_TEAMS.join(', '));
             
             // Column names for Thursday
             const shiftCol = 'Thursday';
@@ -7837,7 +7863,7 @@ const EMBEDDED_PT_DATA = [
                     
                     // Skip FIREHOUSE standby teams - reserved for IROPS duty
                     if (FIREHOUSE_TEAMS.includes(team)) {
-                        console.log(`  ðŸš’ Reserving ${team} for FIREHOUSE standby duty (${shift})`);
+                        console.log(`  [FH] Reserving ${team} for FIREHOUSE standby duty (${shift})`);
                         return;  // Don't add to scheduled teams
                     }
                     
@@ -7864,49 +7890,17 @@ const EMBEDDED_PT_DATA = [
             return teams;
         }
 
-        function processFlights(flightData, dayOfWeek) {
+        function processFlights(flightData) {
             console.log('Processing flights, total rows:', flightData.length);
-            console.log('Filtering for day:', dayOfWeek);
             if (flightData.length > 0) {
                 console.log('Sample flight data:', flightData[0]);
             }
-            
-            // Create a map of day names to determine which date to use
-            const dayMap = {
-                'Monday': 1,
-                'Tuesday': 2,
-                'Wednesday': 3,
-                'Thursday': 4,
-                'Friday': 5,
-                'Saturday': 6,
-                'Sunday': 0
-            };
-            
-            const targetDayNumber = dayMap[dayOfWeek];
             
             const processed = flightData
                 .filter(f => {
                     // Filter based on departure scheduled time
                     if (!f.Dep_Scheduled || f.Dep_Scheduled === '') return false;
                     if (!f.Dep_Flight || f.Dep_Flight === '') return false;
-                    
-                    // Filter by day of week if DepDate exists
-                    if (f.DepDate && f.DepDate !== '') {
-                        const depDate = new Date(f.DepDate);
-                        const dayOfWeekNumber = depDate.getDay();
-                        if (dayOfWeekNumber !== targetDayNumber) {
-                            return false; // Skip flights not on the selected day
-                        }
-                    }
-                    // Also check arrival date for terminators
-                    else if (f.ArrDate && f.ArrDate !== '') {
-                        const arrDate = new Date(f.ArrDate);
-                        const dayOfWeekNumber = arrDate.getDay();
-                        if (dayOfWeekNumber !== targetDayNumber) {
-                            return false;
-                        }
-                    }
-                    
                     return true;
                 })
                 .map(f => {
@@ -9182,14 +9176,14 @@ const EMBEDDED_PT_DATA = [
                 console.error('No scheduleResult');
                 return;
             }
-            console.log('âœ“ Schedule exists');
+            console.log('[OK] Schedule exists');
             
             if (typeof XLSX === 'undefined') {
                 console.error('XLSX library not loaded - export cancelled');
                 console.error('XLSX library not loaded');
                 return;
             }
-            console.log('âœ“ XLSX library loaded');
+            console.log('[OK] XLSX library loaded');
 
             const wb = XLSX.utils.book_new();
             const dayOfWeek = scheduleResult.dayOfWeek || 'Thursday';
@@ -9259,7 +9253,7 @@ const EMBEDDED_PT_DATA = [
             
             // Add FIREHOUSE standby teams to Team Summary (at the end)
             teamSummaryData.push({
-                'Team': 'TM100 ðŸš’',
+                'Team': 'TM100 [FH]',
                 'Department': 'U00 TRK',
                 'Shift': '05:00-11:00',
                 'Team Type': 'PT - FIREHOUSE',
@@ -9270,7 +9264,7 @@ const EMBEDDED_PT_DATA = [
             });
             
             teamSummaryData.push({
-                'Team': 'TM106 ðŸš’',
+                'Team': 'TM106 [FH]',
                 'Department': 'U30 TRK',
                 'Shift': '15:00-21:00',
                 'Team Type': 'PT - FIREHOUSE',
@@ -9445,7 +9439,7 @@ const EMBEDDED_PT_DATA = [
             const date = new Date().toISOString().split('T')[0];
             const filename = `PHL_Schedule_${dayOfWeek}_${date}.xlsx`;
             
-            console.log('âœ“ All tabs created successfully');
+            console.log('[OK] All tabs created successfully');
             console.log('Attempting to save file:', filename);
             console.log('Platform:', navigator.platform);
             console.log('User Agent:', navigator.userAgent.substring(0, 50));
@@ -9470,9 +9464,9 @@ const EMBEDDED_PT_DATA = [
             
             const icons = {
                 success: 'Success',
-                error: '✗',
-                info: 'ℹ',
-                warning: '⚠'
+                error: '[X]',
+                info: '[i]',
+                warning: '[!]'
             };
             
             const toast = document.createElement('div');
@@ -9530,7 +9524,7 @@ const EMBEDDED_PT_DATA = [
                 // Take a snapshot of current schedule if not already done
                 if (!liveUpdateState.currentScheduleSnapshot && scheduleResult) {
                     liveUpdateState.currentScheduleSnapshot = JSON.parse(JSON.stringify(scheduleResult));
-                    console.log('📸 Schedule snapshot created for live updates');
+                    console.log('[OK] Schedule snapshot created for live updates');
                 }
             }
         });
@@ -9547,7 +9541,7 @@ const EMBEDDED_PT_DATA = [
 
             // Check if schedule exists
             if (!scheduleResult || !scheduleResult.assignments) {
-                console.log('⚠️ No schedule generated yet - please generate schedule first');
+                console.log('[!] No schedule generated yet - please generate schedule first');
                 console.log('scheduleResult:', scheduleResult);
                 showSearchMessage('Please generate a schedule first before searching flights');
                 return;
@@ -9561,7 +9555,7 @@ const EMBEDDED_PT_DATA = [
                 const dest = (assignment.flight.destination || '').toLowerCase();
                 const match = flightNum.includes(searchTerm) || dest.includes(searchTerm);
                 if (match) {
-                    console.log(`✓ Match found: ${assignment.flight.flight} to ${assignment.flight.destination}`);
+                    console.log(`[OK] Match found: ${assignment.flight.flight} to ${assignment.flight.destination}`);
                 }
                 return match;
             });
@@ -9610,7 +9604,7 @@ const EMBEDDED_PT_DATA = [
                 item.innerHTML = `
                     <div style="font-weight: 600; color: #1e293b;">${flight.flight}</div>
                     <div style="font-size: 0.85em; color: #64748b;">
-                        ${flight.destination} • ${flight.time} • ${assignment.team || 'Unassigned'}
+                        ${flight.destination} &bull; ${flight.time} &bull; ${assignment.team || 'Unassigned'}
                     </div>
                 `;
                 item.addEventListener('mouseover', () => {
@@ -9814,11 +9808,11 @@ const EMBEDDED_PT_DATA = [
             const teamData = scheduleResult.teamWorkload.find(tw => tw.team.id === currentTeamId);
             
             if (!teamData) {
-                console.error('❌ Team not found:', currentTeamId);
+                console.error('[X] Team not found:', currentTeamId);
                 const impactContent = document.getElementById('impactContent');
                 impactContent.innerHTML = `
                     <div style="text-align: center; padding: 40px; color: #ef4444;">
-                        <p style="font-size: 2em; margin-bottom: 10px;">⚠️</p>
+                        <p style="font-size: 2em; margin-bottom: 10px;">[!]</p>
                         <p>Team ${currentTeamId} not found in schedule data</p>
                     </div>
                 `;
@@ -9880,7 +9874,7 @@ const EMBEDDED_PT_DATA = [
                 
                 liveUpdateState.modifications.hasChanges = true;
                 
-                console.log(`✓ ETD updated from ${oldTime} to ${newETD}`);
+                console.log(`[OK] ETD updated from ${oldTime} to ${newETD}`);
                 return true;
             }
             
@@ -9889,33 +9883,88 @@ const EMBEDDED_PT_DATA = [
 
         function analyzeTimingConflicts(flight, newETD, teamData) {
             const conflicts = [];
-            const flightTime = new Date(`2000-01-01T${newETD}`);
+            const newETDMinutes = parseInt(newETD.split(':')[0]) * 60 + parseInt(newETD.split(':')[1]);
+            const originalETDMinutes = flight.timeMinutes;
             
-            // Check each flight assigned to this team
+            console.log(`=== Analyzing conflicts for ${flight.flight} with new ETD ${newETD} ===`);
+            console.log(`Original time: ${flight.time}, New time: ${newETD}`);
+            console.log(`Team ${teamData.team.id} has ${teamData.operations.length} operations`);
+            
+            // CRITICAL CONCEPT: Flights are PRE-LOADED on truck before leaving facility
+            // We only need to check if gate-to-gate timing still works with the delay
+            
             teamData.operations.forEach(assignedFlight => {
                 if (assignedFlight.flight === flight.flight) return; // Skip self
                 
-                const otherTime = new Date(`2000-01-01T${assignedFlight.time}`);  // Changed from assignedFlight.std
-                const timeDiffMins = Math.abs(flightTime - otherTime) / 60000;
+                const otherTimeMinutes = assignedFlight.timeMinutes;
+                const otherTime = assignedFlight.time;
                 
-                // Check if too close (< 40 min buffer for domestic)
-                if (timeDiffMins < 40) {
-                    conflicts.push({
-                        flight: assignedFlight.flight,
-                        time: assignedFlight.time,  // Changed from assignedFlight.std
-                        gap: Math.round(timeDiffMins)
-                    });
+                console.log(`\n  Checking ${assignedFlight.flight} at ${otherTime}:`);
+                
+                // Calculate ORIGINAL gap in the schedule
+                const originalGap = Math.abs(otherTimeMinutes - originalETDMinutes);
+                
+                // Calculate NEW gap with the delay
+                const newGap = Math.abs(otherTimeMinutes - newETDMinutes);
+                
+                console.log(`    Original gap: ${originalGap} min`);
+                console.log(`    New gap after delay: ${newGap} min`);
+                
+                // LOGIC: If original schedule had X minutes between flights, and that worked,
+                // then as long as we still have some reasonable time (e.g., 5+ min for gate-to-gate),
+                // the delay is acceptable
+                
+                const minimumGateToGate = 5; // Minimum time to drive between gates
+                
+                // Determine which flight is first
+                const delayedFlightIsFirst = newETDMinutes < otherTimeMinutes;
+                
+                if (delayedFlightIsFirst) {
+                    // Delayed flight departs BEFORE the other flight
+                    const gapBetween = otherTimeMinutes - newETDMinutes;
+                    
+                    console.log(`    Delayed flight is FIRST &rarr; ${gapBetween} min until next flight`);
+                    
+                    if (gapBetween < minimumGateToGate) {
+                        console.log(`    WARNING: Only ${gapBetween} min gap (need ${minimumGateToGate} min minimum for gate-to-gate)`);
+                        conflicts.push({
+                            flight: assignedFlight.flight,
+                            time: otherTime,
+                            gap: gapBetween,
+                            required: minimumGateToGate,
+                            reason: `Insufficient time for truck to travel gate-to-gate`
+                        });
+                    } else {
+                        console.log(`    OK: ${gapBetween} min is enough for gate-to-gate travel`);
+                    }
+                } else {
+                    // Other flight departs BEFORE the delayed flight
+                    const gapBetween = newETDMinutes - otherTimeMinutes;
+                    
+                    console.log(`    Delayed flight is AFTER &rarr; ${gapBetween} min after previous flight`);
+                    
+                    if (gapBetween < minimumGateToGate) {
+                        console.log(`    WARNING: Only ${gapBetween} min gap (need ${minimumGateToGate} min minimum for gate-to-gate)`);
+                        conflicts.push({
+                            flight: assignedFlight.flight,
+                            time: otherTime,
+                            gap: gapBetween,
+                            required: minimumGateToGate,
+                            reason: `Insufficient time for truck to travel gate-to-gate from previous flight`
+                        });
+                    } else {
+                        console.log(`    OK: ${gapBetween} min is enough for gate-to-gate travel`);
+                    }
                 }
             });
             
-            console.log(`Found ${conflicts.length} conflicts`);
+            console.log(`\nFound ${conflicts.length} conflicts`);
             return conflicts;
         }
 
         function findAlternativeTeams(flight, newETD) {
             const alternatives = [];
             const flightTime = new Date(`2000-01-01T${newETD}`);
-            const flightTimeMinutes = parseInt(newETD.split(':')[0]) * 60 + parseInt(newETD.split(':')[1]);
             
             // Check each team for availability
             scheduleResult.teamWorkload.forEach(teamData => {
@@ -9924,19 +9973,6 @@ const EMBEDDED_PT_DATA = [
                 
                 let canFit = true;
                 let minGap = 999;
-                
-                // Check if flight time is within team's shift
-                const shiftStart = teamData.team.startMinutes;
-                const shiftEnd = shiftStart + (8.5 * 60); // 8.5 hour shift
-                
-                // Flight needs to depart within shift window (allowing 60 min before shift for prep)
-                const earliestService = shiftStart - 60;
-                const latestService = shiftEnd;
-                
-                if (flightTimeMinutes < earliestService || flightTimeMinutes > latestService) {
-                    console.log(`Team ${teamData.team.id} shift (${teamData.team.shift}) doesn't cover flight time ${newETD}`);
-                    return; // Skip this team - shift doesn't cover the flight time
-                }
                 
                 // Check if this team has capacity
                 if (teamData.operations.length >= 6) {
@@ -9958,8 +9994,7 @@ const EMBEDDED_PT_DATA = [
                     alternatives.push({
                         team: teamData.team.id,
                         currentOps: teamData.operations.length,
-                        minGap: minGap === 999 ? 'N/A' : minGap,
-                        shift: teamData.team.shift
+                        minGap: minGap === 999 ? 'N/A' : minGap
                     });
                 }
             });
@@ -9967,7 +10002,7 @@ const EMBEDDED_PT_DATA = [
             // Sort by current ops (prefer less loaded teams)
             alternatives.sort((a, b) => a.currentOps - b.currentOps);
             
-            console.log(`Found ${alternatives.length} alternative teams that can cover ${newETD}`);
+            console.log(`Found ${alternatives.length} alternative teams`);
             return alternatives.slice(0, 3); // Top 3 alternatives
         }
 
@@ -9980,11 +10015,13 @@ const EMBEDDED_PT_DATA = [
                 const bestAlt = alternatives[0];
                 options.push({
                     type: 'reassign',
-                    recommended: true,
+                    recommended: conflicts.length > 0, // [OK] FIX: Only recommend if conflicts exist
                     title: `Option A: Reassign to ${bestAlt.team}`,
-                    description: `Move ${flight.flight} from ${currentTeamData.team.id} to ${bestAlt.team}. Eliminates timing conflicts, maintains balanced workload, and preserves all buffer requirements.`,
+                    description: conflicts.length > 0 
+                        ? `Move ${flight.flight} from ${currentTeamData.team.id} to ${bestAlt.team}. Eliminates ${conflicts.length} timing conflict(s), maintains balanced workload, and preserves all buffer requirements.`
+                        : `Alternative option: Move ${flight.flight} to ${bestAlt.team} if preferred. Current team ${currentTeamData.team.id} works fine, but ${bestAlt.team} is also available with ${bestAlt.currentOps} operations.`,
                     stats: {
-                        conflicts: 'None',
+                        conflicts: conflicts.length > 0 ? `Resolves ${conflicts.length}` : 'None',
                         newTeamOps: bestAlt.currentOps + 1,
                         oldTeamOps: currentTeamData.operations.length - 1
                     }
@@ -9995,7 +10032,7 @@ const EMBEDDED_PT_DATA = [
             if (conflicts.length === 0) {
                 options.push({
                     type: 'keep',
-                    recommended: alternatives.length === 0,
+                    recommended: true, // [OK] FIX: Recommend keeping when there are no conflicts
                     title: `Option B: Keep on ${currentTeamData.team.id}`,
                     description: `Flight ${flight.flight} remains on ${currentTeamData.team.id}. No timing conflicts with new ETD. Team workload stays balanced at ${currentTeamData.operations.length} operations.`,
                     stats: {
@@ -10031,7 +10068,7 @@ const EMBEDDED_PT_DATA = [
             
             // Affected Teams Section
             html += '<div class="impact-section-box">';
-            html += '<div class="impact-section-title">⚠️ Affected Teams & Conflicts</div>';
+            html += '<div class="impact-section-title">[!] Affected Teams & Conflicts</div>';
             
             if (conflicts.length > 0) {
                 html += '<div class="team-impact-card">';
@@ -10039,10 +10076,13 @@ const EMBEDDED_PT_DATA = [
                 html += '<div class="team-impact-details">';
                 html += `With the delay, ${assignment.team} now has ${conflicts.length} buffer conflict(s):<br>`;
                 conflicts.forEach(c => {
-                    html += `• ${c.flight} at ${c.time} - only ${c.gap} min gap (need 40 min)<br>`;
+                    html += `&bull; ${c.flight} at ${c.time} - only ${c.gap} min gap (need ${c.required} min)<br>`;
+                    if (c.reason) {
+                        html += `&nbsp;&nbsp;<span style="font-size: 0.9em; color: #64748b;">${c.reason}</span><br>`;
+                    }
                 });
                 html += `Team total workload: ${currentTeamData.operations.length} ops<br>`;
-                html += '<span class="conflict-tag">⚠️ TIMING CONFLICT</span>';
+                html += '<span class="conflict-tag">[!] TIMING CONFLICT</span>';
                 html += '</div></div>';
             } else {
                 html += '<div class="team-impact-card no-conflict">';
@@ -10051,7 +10091,7 @@ const EMBEDDED_PT_DATA = [
                 html += `No timing conflicts with the delayed departure time.<br>`;
                 html += `All buffer requirements maintained.<br>`;
                 html += `Team total workload: ${currentTeamData.operations.length} ops<br>`;
-                html += '<span class="conflict-tag success">✓ NO CONFLICTS</span>';
+                html += '<span class="conflict-tag success">[OK] NO CONFLICTS</span>';
                 html += '</div></div>';
             }
             
@@ -10062,10 +10102,10 @@ const EMBEDDED_PT_DATA = [
                 html += `<div class="team-impact-name">${alt.team} (Available Alternative)</div>`;
                 html += '<div class="team-impact-details">';
                 html += `${alt.team} is available and can accommodate this flight:<br>`;
-                html += `• Current workload: ${alt.currentOps} ops → would increase to ${alt.currentOps + 1}<br>`;
-                html += `• Maintains all buffer requirements<br>`;
-                html += `• Balanced team distribution<br>`;
-                html += '<span class="conflict-tag success">✓ PERFECT FIT</span>';
+                html += `&bull; Current workload: ${alt.currentOps} ops -> would increase to ${alt.currentOps + 1}<br>`;
+                html += `&bull; Maintains all buffer requirements<br>`;
+                html += `&bull; Balanced team distribution<br>`;
+                html += '<span class="conflict-tag success">[OK] PERFECT FIT</span>';
                 html += '</div></div>';
             }
             
@@ -10074,14 +10114,14 @@ const EMBEDDED_PT_DATA = [
             // Reallocation Options
             if (options && options.length > 0) {
                 html += '<div class="impact-section-box">';
-                html += '<div class="impact-section-title">💡 Reallocation Options</div>';
+                html += '<div class="impact-section-title">Reallocation Options</div>';
                 html += '<div class="reallocation-options-grid">';
                 
                 options.forEach((option, index) => {
                     const cardClass = option.recommended ? 'option-card recommended' : 'option-card';
                     html += `<div class="${cardClass}" onclick="applyReallocationOption(${index})" style="cursor: pointer;">`;
                     if (option.recommended) {
-                        html += '<div class="recommended-tag">⭐ RECOMMENDED</div>';
+                        html += '<div class="recommended-tag">&#9733; RECOMMENDED</div>';
                     }
                     html += '<div class="option-header">';
                     html += `<div class="option-title-text">${option.title}</div>`;
@@ -10134,7 +10174,7 @@ const EMBEDDED_PT_DATA = [
                     // Apply ETD change if there is one
                     if (liveUpdateState.pendingETD && liveUpdateState.pendingETD !== flight.time) {
                         applyETDChange(flight.flight, liveUpdateState.pendingETD);
-                        console.log(`✓ ETD also updated to ${liveUpdateState.pendingETD}`);
+                        console.log(`[OK] ETD also updated to ${liveUpdateState.pendingETD}`);
                     }
                     
                     // 1. Find and update the assignment in scheduleResult.assignments
@@ -10157,7 +10197,7 @@ const EMBEDDED_PT_DATA = [
                             op => op.flight !== flight.flight
                         );
                         oldTeamData.count = oldTeamData.operations.length;
-                        console.log(`✓ Removed from ${oldTeam}, now has ${oldTeamData.count} ops`);
+                        console.log(`[OK] Removed from ${oldTeam}, now has ${oldTeamData.count} ops`);
                     }
                     
                     // 3. Update new team's operations (add flight)
@@ -10226,7 +10266,7 @@ const EMBEDDED_PT_DATA = [
                         `${flight.flight} reassigned from ${oldTeam} to ${newTeam}${timeChange}`,
                         'success'
                     );
-                    addRecentUpdate(`${flight.flight} reassigned → ${oldTeam} to ${newTeam}${timeChange}`);
+                    addRecentUpdate(`${flight.flight} reassigned -> ${oldTeam} to ${newTeam}${timeChange}`);
                     liveUpdateState.alertCounts.resolved++;
                     
                     // Clear pending ETD
@@ -10234,22 +10274,186 @@ const EMBEDDED_PT_DATA = [
                     break;
                     
                 case 'keep':
-                    showToast(
-                        'No Changes Needed',
-                        `${flight.flight} will remain on ${assignment.team}`,
-                        'info'
-                    );
-                    addRecentUpdate(`${flight.flight} kept on ${assignment.team} (no conflicts)`);
+                    console.log(`=== KEEPING ${flight.flight} ON ${assignment.team} ===`);
+                    
+                    // [OK] FIX: Apply ETD change if there is one
+                    if (liveUpdateState.pendingETD && liveUpdateState.pendingETD !== flight.time) {
+                        const oldTime = flight.time;
+                        
+                        // Update flight time in assignment
+                        applyETDChange(flight.flight, liveUpdateState.pendingETD);
+                        console.log(`[OK] ETD updated from ${oldTime} to ${liveUpdateState.pendingETD}`);
+                        
+                        // CRITICAL FIX: Also update the flight in the team's operations array
+                        const teamData = scheduleResult.teamWorkload.find(
+                            tw => tw.team.id === assignment.team
+                        );
+                        
+                        if (teamData) {
+                            // Find the flight in the team's operations
+                            const flightInTeam = teamData.operations.find(
+                                op => op.flight === flight.flight
+                            );
+                            
+                            if (flightInTeam) {
+                                // Update the time and timeMinutes in the team's operations array
+                                flightInTeam.time = liveUpdateState.pendingETD;
+                                const timeParts = liveUpdateState.pendingETD.split(':');
+                                flightInTeam.timeMinutes = parseInt(timeParts[0]) * 60 + parseInt(timeParts[1]);
+                                
+                                // Re-sort operations by time to maintain chronological order
+                                teamData.operations.sort((a, b) => a.timeMinutes - b.timeMinutes);
+                                console.log(`[OK] Team ${assignment.team} operations updated and re-sorted`);
+                            }
+                        }
+                        
+                        // Track modification
+                        liveUpdateState.modifications.flights[flight.flight] = {
+                            oldTeam: assignment.team,
+                            newTeam: assignment.team,  // Same team
+                            oldTime: oldTime,
+                            newTime: liveUpdateState.pendingETD,
+                            flightNumber: flight.flight,
+                            destination: flight.destination,
+                            time: liveUpdateState.pendingETD
+                        };
+                        
+                        liveUpdateState.modifications.hasChanges = true;
+                        
+                        // Track for undo
+                        liveUpdateState.undoHistory.push({
+                            type: 'reassign',
+                            flightNumber: flight.flight,
+                            oldTeam: assignment.team,
+                            newTeam: assignment.team,
+                            oldTime: oldTime,
+                            newTime: liveUpdateState.pendingETD,
+                            description: `${flight.flight} time updated to ${liveUpdateState.pendingETD}`
+                        });
+                        
+                        // Refresh displays
+                        console.log('Refreshing schedule display...');
+                        displayResults(scheduleResult);
+                        setupTeamSearch();
+                        populatePrintDropdown();
+                        
+                        // Show modified banner
+                        document.getElementById('modifiedBanner').classList.add('visible');
+                        
+                        // Highlight modified rows
+                        highlightModifiedFlights();
+                        
+                        showToast(
+                            'Time Updated',
+                            `${flight.flight} time updated to ${liveUpdateState.pendingETD} on ${assignment.team}`,
+                            'success'
+                        );
+                        addRecentUpdate(`${flight.flight} time &rarr; ${liveUpdateState.pendingETD} (kept on ${assignment.team})`);
+                        
+                        // Clear pending ETD
+                        liveUpdateState.pendingETD = null;
+                    } else {
+                        // No time change, truly no changes needed
+                        showToast(
+                            'No Changes Needed',
+                            `${flight.flight} will remain on ${assignment.team}`,
+                            'info'
+                        );
+                        addRecentUpdate(`${flight.flight} kept on ${assignment.team} (no conflicts)`);
+                    }
+                    
                     liveUpdateState.alertCounts.resolved++;
                     break;
                     
                 case 'keep_adjust':
-                    showToast(
-                        'Cascade Adjustments',
-                        `${flight.flight} kept on ${assignment.team}, other flights will be adjusted`,
-                        'warning'
-                    );
-                    addRecentUpdate(`${flight.flight} kept, cascade adjustments made`);
+                    console.log(`=== KEEPING ${flight.flight} ON ${assignment.team} WITH ADJUSTMENTS ===`);
+                    
+                    // Apply ETD change if there is one (same logic as 'keep' case)
+                    if (liveUpdateState.pendingETD && liveUpdateState.pendingETD !== flight.time) {
+                        const oldTime = flight.time;
+                        
+                        // Update flight time in assignment
+                        applyETDChange(flight.flight, liveUpdateState.pendingETD);
+                        console.log(`[OK] ETD updated from ${oldTime} to ${liveUpdateState.pendingETD}`);
+                        
+                        // CRITICAL FIX: Also update the flight in the team's operations array
+                        const teamData = scheduleResult.teamWorkload.find(
+                            tw => tw.team.id === assignment.team
+                        );
+                        
+                        if (teamData) {
+                            // Find the flight in the team's operations
+                            const flightInTeam = teamData.operations.find(
+                                op => op.flight === flight.flight
+                            );
+                            
+                            if (flightInTeam) {
+                                // Update the time and timeMinutes in the team's operations array
+                                flightInTeam.time = liveUpdateState.pendingETD;
+                                const timeParts = liveUpdateState.pendingETD.split(':');
+                                flightInTeam.timeMinutes = parseInt(timeParts[0]) * 60 + parseInt(timeParts[1]);
+                                
+                                // Re-sort operations by time to maintain chronological order
+                                teamData.operations.sort((a, b) => a.timeMinutes - b.timeMinutes);
+                                console.log(`[OK] Team ${assignment.team} operations updated and re-sorted`);
+                            }
+                        }
+                        
+                        // Track modification
+                        liveUpdateState.modifications.flights[flight.flight] = {
+                            oldTeam: assignment.team,
+                            newTeam: assignment.team,  // Same team
+                            oldTime: oldTime,
+                            newTime: liveUpdateState.pendingETD,
+                            flightNumber: flight.flight,
+                            destination: flight.destination,
+                            time: liveUpdateState.pendingETD
+                        };
+                        
+                        liveUpdateState.modifications.hasChanges = true;
+                        
+                        // Track for undo
+                        liveUpdateState.undoHistory.push({
+                            type: 'reassign',
+                            flightNumber: flight.flight,
+                            oldTeam: assignment.team,
+                            newTeam: assignment.team,
+                            oldTime: oldTime,
+                            newTime: liveUpdateState.pendingETD,
+                            description: `${flight.flight} time updated to ${liveUpdateState.pendingETD} (cascade adjustments)`
+                        });
+                        
+                        // Refresh displays
+                        console.log('Refreshing schedule display...');
+                        displayResults(scheduleResult);
+                        setupTeamSearch();
+                        populatePrintDropdown();
+                        
+                        // Show modified banner
+                        document.getElementById('modifiedBanner').classList.add('visible');
+                        
+                        // Highlight modified rows
+                        highlightModifiedFlights();
+                        
+                        showToast(
+                            'Time Updated',
+                            `${flight.flight} time updated to ${liveUpdateState.pendingETD} on ${assignment.team}`,
+                            'warning'
+                        );
+                        addRecentUpdate(`${flight.flight} time &rarr; ${liveUpdateState.pendingETD} (kept, cascade adj.)`);
+                        
+                        // Clear pending ETD
+                        liveUpdateState.pendingETD = null;
+                    } else {
+                        // No time change
+                        showToast(
+                            'Cascade Adjustments',
+                            `${flight.flight} kept on ${assignment.team}, other flights will be adjusted`,
+                            'warning'
+                        );
+                        addRecentUpdate(`${flight.flight} kept, cascade adjustments made`);
+                    }
+                    
                     liveUpdateState.alertCounts.warning++;
                     break;
                     
@@ -10374,7 +10578,7 @@ const EMBEDDED_PT_DATA = [
                         op => op.flight !== flight.flight
                     );
                     teamData.count = teamData.operations.length;
-                    console.log(`✓ Removed from ${teamToFree}, now has ${teamData.count} ops`);
+                    console.log(`[OK] Removed from ${teamToFree}, now has ${teamData.count} ops`);
                 }
                 
                 // 3. Track modification
@@ -10408,7 +10612,7 @@ const EMBEDDED_PT_DATA = [
             }
             
             // Add to recent updates (using saved oldTeam)
-            addRecentUpdate(`${flight.flight} cancelled → ${oldTeam} freed up`);
+            addRecentUpdate(`${flight.flight} cancelled -> ${oldTeam} freed up`);
             
             // Update alert counts
             liveUpdateState.alertCounts.resolved++;
@@ -10424,7 +10628,7 @@ const EMBEDDED_PT_DATA = [
                 'success'
             );
             
-            console.log(`✓ Flight ${flight.flight} cancelled successfully`);
+            console.log(`[OK] Flight ${flight.flight} cancelled successfully`);
         }
 
         // Highlight cancelled flights in the schedule
